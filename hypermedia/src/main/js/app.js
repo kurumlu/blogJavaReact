@@ -1,7 +1,7 @@
 'use strict';
 
 const React = require('react');
-const ReactDOM = require('react-dom')
+const ReactDOM = require('react-dom');
 
 //const BrowserRouter = require('react-router-dom');
 //const Router = require('react-router-dom');
@@ -11,8 +11,13 @@ const ReactDOM = require('react-dom')
 const client = require('./client');
 const follow = require('./follow'); // function to hop multiple links by "rel"
 
+const _ = require('lodash');
+//const Select = require('react-select');
+
 const root = '/api';
-import { BrowserRouter as Router, Route, Link } from 'react-router-dom'
+import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
+import Select from 'react-select';
+//import '../../..node_modules/react-select/dist/react-select.css';
 
 class App extends React.Component {
 	render(){
@@ -20,7 +25,7 @@ class App extends React.Component {
 			<Router>
 				<div>
 					<Route exact path="/" component={LandingPage}/>
-					<Route path="/addBlogItem" component={CreateDialog}/> 
+					<Route path="/addBlogItem" component={AddBlogItem}/> 
 				</div>
 			</Router>
 		)
@@ -121,7 +126,7 @@ class LandingPage extends React.Component {
 	render() {
 		return (
 			<div>
-				<CreateDialog attributes={this.state.attributes} onCreate={this.onCreate}/>
+				<AddBlogItem attributes={this.state.attributes} onCreate={this.onCreate}/>
 				<BlogItemList blogItems={this.state.blogItems}
 							links={this.state.links}
 							pageSize={this.state.pageSize}
@@ -133,8 +138,8 @@ class LandingPage extends React.Component {
 	}
 }
 
-// tag::create-dialog[]
-class CreateDialog extends React.Component {
+// tag::add blog item[]
+class AddBlogItem extends React.Component {
 
 	constructor(props) {
 		super(props);
@@ -158,14 +163,48 @@ class CreateDialog extends React.Component {
 		window.location = "#";
 	}
 
+
 	render() {
-		var inputs = this.props.attributes.map(attribute =>
-			<p key={attribute}>
-				<input type="text" placeholder={attribute} ref={attribute} className="field" />
-			</p>
-		);
+		//var inputs = this.props.attributes.map(attribute =>
+		//	<p key={attribute}>
+		//		<input type="text" placeholder={attribute} ref={attribute} className="field" />
+		//	</p>
+		//);
+
+		console.log("elements...");
+		var elements = [];
+
+		_.each(this.props.attributes, (attribute)=> {
+			if (attribute==='title') {
+				elements.push(			
+					<p key={attribute}>
+						<input type="text" placeholder={attribute} ref={attribute} className="field" />
+					</p>);
+			}
+			if (attribute==='description') {
+				elements.push(			
+					<p key={attribute}>
+						<input type="textarea" rows="5"  cols="150" placeholder={attribute} ref={attribute} className="field" />
+					</p>);
+			}
+			var options = [
+				{ value: 'one', label: 'One' },
+				{ value: 'two', label: 'Two' }
+			  ];
+			//logChange(val) {
+			//console.log("Selected: " + JSON.stringify(val));
+			//}
+			if (attribute==='categories') {
+				elements.push(			
+					<p key={attribute}>	
+						<Select name={attribute}  placeholder={attribute} ref={attribute} options={options} multi={true} placeholder="Select a category" />
+					</p>);
+			}
+		});
+		console.log(elements);
 
 		return (
+			//<Link to="/addBlogItem">
 			<div>
 				<button className="btn btn-default" >
 					<a href="#createBlogItem">Add new item</a>
@@ -174,21 +213,20 @@ class CreateDialog extends React.Component {
 				<div id="createBlogItem" className="modalDialog">
 					<div>
 						<a href="#" title="Close" className="close">X</a>
-
 						<h2>Create new blog item</h2>
-
 						<form>
-							{inputs}
+							{elements}
 							<button className="btn btn-default" onClick={this.handleSubmit}>Add</button>
 						</form>
 					</div>
 				</div>
 			</div>
+			//</Link>
 		)
 	}
 
 }
-// end::create-dialog[]
+// end::add blog item
 
 class BlogItemList extends React.Component {
 
@@ -288,6 +326,8 @@ class BlogItem extends React.Component {
 	}
 
 	render() {
+		var creationDate = this.props.blogItem.createdOn.toString();
+		var categories = _.each(this.props.blogItem.categories,(category)=> categories=`${category.name}, ${categories}`);
 		return (
 			<tr>
 				<td>
@@ -298,8 +338,13 @@ class BlogItem extends React.Component {
 							</div>
 						</div>
 						<div className="row">
-							<div className="col-md-4">
-								<small><strong><em>createdOn: {this.props.blogItem.cretedOn}</em></strong></small>
+							<div className="col-md-4 create-text" >
+								<small><strong><em>createdOn:</em> {creationDate}</strong></small>
+							</div>
+						</div>
+						<div className="row">
+							<div className="col-md-12 categories-text" >
+								<small><strong><em>categories:</em> {categories}</strong></small>
 							</div>
 						</div>
 						<div className="row">
