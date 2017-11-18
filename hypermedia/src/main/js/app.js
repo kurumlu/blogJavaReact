@@ -12,6 +12,8 @@ const client = require('./client');
 const follow = require('./follow'); // function to hop multiple links by "rel"
 
 const _ = require('lodash');
+var moment = require('moment');
+moment().format("MMM Do YY"); 
 //const Select = require('react-select');
 
 const root = '/api';
@@ -327,7 +329,8 @@ class BlogItem extends React.Component {
 
 	render() {
 		var creationDate = this.props.blogItem.createdOn.toString();
-		var categories = _.each(this.props.blogItem.categories,(category)=> categories=`${category.name}, ${categories}`);
+		var categories; 
+		_.each(this.props.blogItem.categories,(category)=> categories=`${category.name}, ${categories}`);
 		return (
 			<tr>
 				<td>
