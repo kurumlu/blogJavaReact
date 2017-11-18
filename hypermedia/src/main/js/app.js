@@ -179,7 +179,7 @@ class CreateDialog extends React.Component {
 
 						<form>
 							{inputs}
-							<button className="btn btn-default" onClick={this.handleSubmit}>Create</button>
+							<button className="btn btn-default" onClick={this.handleSubmit}>Add</button>
 						</form>
 					</div>
 				</div>
