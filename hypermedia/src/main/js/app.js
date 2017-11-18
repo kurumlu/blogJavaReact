@@ -2,8 +2,13 @@
 
 const React = require('react');
 const ReactDOM = require('react-dom')
-const client = require('./client');
 
+//const BrowserRouter = require('react-router-dom');
+//const Router = require('react-router-dom');
+//const Route = require('react-router-dom');
+//const Link = require('react-router-dom');
+
+const client = require('./client');
 const follow = require('./follow'); // function to hop multiple links by "rel"
 
 const root = '/api';
