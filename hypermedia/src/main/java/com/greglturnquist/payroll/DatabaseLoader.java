@@ -29,13 +29,13 @@ import java.util.ArrayList;
 @Component
 public class DatabaseLoader implements CommandLineRunner {
 
-	//private final EmployeeRepository repository;
 	private final BlogItemRepository repository;
+	private final CategoryItemRepository catItemRepository;
 
 	@Autowired
-	public DatabaseLoader( BlogItemRepository repository) {
-		//this.repository = repository;
+	public DatabaseLoader( BlogItemRepository repository, CategoryItemRepository catItemRepository) {
 		this.repository = repository;
+		this.catItemRepository = catItemRepository;
 	}
 
 	@Override
@@ -117,6 +117,30 @@ public class DatabaseLoader implements CommandLineRunner {
 		categories.add (new CategoryItem ("Cymbopogon"));
 		this.repository.save(new BlogItem("Lemon-grass", "Cymbopogon, better known as lemongrass, is a genus of Asian, African, Australian, and tropical island plants in the grass family. Some species (particularly Cymbopogon citratus) are commonly cultivated as culinary and medicinal herbs because of their scent, resembling that of lemons (Citrus limon). Common names include lemon grass, lemongrass, barbed wire grass, silky heads, citronella grass, cha de Dartigalongue, fever grass, tanglad, hierba Luisa, or gavati chahapati, amongst many others.",categories));
 
+		//filling data for the Categories table
+		this.catItemRepository.save(new CategoryItem ("plant"));
+		this.catItemRepository.save(new CategoryItem ("Angiosperms"));
+		this.catItemRepository.save(new CategoryItem ("Monocots"));
+		this.catItemRepository.save(new CategoryItem ("Commelinids"));
+		this.catItemRepository.save(new CategoryItem ("Poales"));
+		this.catItemRepository.save(new CategoryItem ("Poaceae"));
+		this.catItemRepository.save(new CategoryItem ("Panicoideae"));
+		this.catItemRepository.save(new CategoryItem ("Andropogoneae"));
+		this.catItemRepository.save(new CategoryItem ("Andropogoninae"));
+		this.catItemRepository.save(new CategoryItem ("Cymbopogon"));
+		this.catItemRepository.save(new CategoryItem ("Cnidium"));
+		this.catItemRepository.save(new CategoryItem ("Selineae"));
+		this.catItemRepository.save(new CategoryItem ("Apiaceae"));
+		this.catItemRepository.save(new CategoryItem ("Apiales"));
+		this.catItemRepository.save(new CategoryItem ("Eudicots"));
+		this.catItemRepository.save(new CategoryItem ("Chenopodium"));
+		this.catItemRepository.save(new CategoryItem ("C. album"));
+		this.catItemRepository.save(new CategoryItem ("Caryophyllales"));
+		this.catItemRepository.save(new CategoryItem ("L. nobilis"));
+		this.catItemRepository.save(new CategoryItem ("F. ulmaria"));
+		this.catItemRepository.save(new CategoryItem ("Filipendula"));
+		this.catItemRepository.save(new CategoryItem ("T. pratense"));
+		this.catItemRepository.save(new CategoryItem ("Aloe"));
 	}
 }
 // end::code[]

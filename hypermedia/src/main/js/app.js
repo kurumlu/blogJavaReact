@@ -3,11 +3,6 @@
 const React = require('react');
 const ReactDOM = require('react-dom');
 
-//const BrowserRouter = require('react-router-dom');
-//const Router = require('react-router-dom');
-//const Route = require('react-router-dom');
-//const Link = require('react-router-dom');
-
 const client = require('./client');
 const follow = require('./follow'); // function to hop multiple links by "rel"
 
@@ -19,7 +14,7 @@ moment().format("MMM Do YY");
 const root = '/api';
 import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 import Select from 'react-select';
-//import '../../..node_modules/react-select/dist/react-select.css';
+//import '../../../node_modules/react-select/dist/react-select.css';
 
 class App extends React.Component {
 	render(){
@@ -43,6 +38,7 @@ class LandingPage extends React.Component {
 		this.onCreate = this.onCreate.bind(this);
 		this.onDelete = this.onDelete.bind(this);
 		this.onNavigate = this.onNavigate.bind(this);
+		//this.categories = {blogItems: [],attributes: [],links: {}};
 	}
 
 	// tag::follow-2[]
@@ -67,6 +63,26 @@ class LandingPage extends React.Component {
 		});
 	}
 	// end::follow-2[]
+
+	loadCategories() {
+		follow(client, root, [
+			{rel: 'categoryItems'}]
+		).then(categoryItemCollection => {
+			return client({
+				method: 'GET',
+				path: categoryItemCollection.entity._links.profile.href,
+				headers: {'Accept': 'application/schema+json'}
+			}).then(schema => {
+				this.schema = schema.entity;
+				return categoryItemCollection;
+			});
+		}).done(categoryItemCollection => {
+			this.setState({
+				categoryItems: categoryItemCollection.entity._embedded.categoryItems,
+				attributes: Object.keys(this.schema.properties),
+				links: categoryItemCollection.entity._links});
+		});
+	}
 
 	// tag::create[]
 	onCreate(newBlogItem) {
@@ -115,6 +131,7 @@ class LandingPage extends React.Component {
 	updatePageSize(pageSize) {
 		if (pageSize !== this.state.pageSize) {
 			this.loadFromServer(pageSize);
+			this.loadCategories();
 		}
 	}
 	// end::update-page-size[]
@@ -167,14 +184,14 @@ class AddBlogItem extends React.Component {
 
 
 	render() {
-		//var inputs = this.props.attributes.map(attribute =>
-		//	<p key={attribute}>
-		//		<input type="text" placeholder={attribute} ref={attribute} className="field" />
-		//	</p>
-		//);
-
-		console.log("elements...");
 		var elements = [];
+		var options = [
+			{ value: 'one', label: 'One' },
+			{ value: 'two', label: 'Two' }
+		  ];
+		//logChange(val) {
+		//	console.log("Selected: " + JSON.stringify(val));
+		//};
 
 		_.each(this.props.attributes, (attribute)=> {
 			if (attribute==='title') {
@@ -189,22 +206,14 @@ class AddBlogItem extends React.Component {
 						<input type="textarea" rows="5"  cols="150" placeholder={attribute} ref={attribute} className="field" />
 					</p>);
 			}
-			var options = [
-				{ value: 'one', label: 'One' },
-				{ value: 'two', label: 'Two' }
-			  ];
-			//logChange(val) {
-			//console.log("Selected: " + JSON.stringify(val));
-			//}
 			if (attribute==='categories') {
-				elements.push(			
-					<p key={attribute}>	
-						<Select name={attribute}  placeholder={attribute} ref={attribute} options={options} multi={true} placeholder="Select a category" />
-					</p>);
+				elements.push(
+					<Select key={attribute} name={attribute} ref={attribute} options={options} multi={true} placeholder={attribute} />);			
 			}
 		});
-		console.log(elements);
 
+
+		//<Select name={attribute} ref={attribute} options={options} multi={true} placeholder="Select a category" />
 		return (
 			//<Link to="/addBlogItem">
 			<div>
@@ -342,12 +351,12 @@ class BlogItem extends React.Component {
 						</div>
 						<div className="row">
 							<div className="col-md-4 create-text" >
-								<small><strong><em>createdOn:</em> {creationDate}</strong></small>
+								<small><em><strong>createdOn:</strong>{creationDate}</em></small>
 							</div>
 						</div>
 						<div className="row">
 							<div className="col-md-12 categories-text" >
-								<small><strong><em>categories:</em> {categories}</strong></small>
+								<small><em><strong>categories:</strong>{categories}</em></small>
 							</div>
 						</div>
 						<div className="row">
