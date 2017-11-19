@@ -32,14 +32,14 @@ class LandingPage extends React.Component {
 
 	constructor(props) {
 		super(props);
-		this.state = {blogItems: [], attributes: [], pageSize: 2, links: {}, categoryItems:[]};
+		this.state = {blogItems: [], attributes: [], pageSize: 2, links: {}};
 		this.updatePageSize = this.updatePageSize.bind(this);
 		this.onCreate = this.onCreate.bind(this);
 		this.onDelete = this.onDelete.bind(this);
 		this.onNavigate = this.onNavigate.bind(this);
 	}
 
-	// loading blog items data from server
+	// loading blog items  from server
 	loadFromServer(pageSize) {
 		follow(client, root, [
 			{rel: 'blogItems', params: {size: pageSize}}]
@@ -61,25 +61,6 @@ class LandingPage extends React.Component {
 		});
 	}
 	// end::follow-2[]
-
-	//loading Categories data from server
-	loadCategories() {
-		follow(client, root, [
-			{rel: 'categoryItems'}]
-		).then(categoryItemCollection => {
-			return client({
-				method: 'GET',
-				path: categoryItemCollection.entity._links.profile.href,
-				headers: {'Accept': 'application/schema+json'}
-			}).then(schema => {
-				this.schema = schema.entity;
-				return categoryItemCollection;
-			});
-		}).done(categoryItemCollection => {
-			this.setState({
-				categoryItems: categoryItemCollection.entity._embedded.categoryItems});
-		});
-	}
 
 	// tag::create[]
 	onCreate(newBlogItem) {
@@ -135,7 +116,6 @@ class LandingPage extends React.Component {
 	// tag::follow-1[]
 	componentDidMount() {
 		this.loadFromServer(this.state.pageSize);
-		this.loadCategories();
 	}
 	// end::follow-1[]
 
@@ -161,33 +141,36 @@ class AddBlogItem extends React.Component {
 		super(props);
 		this.handleSubmit = this.handleSubmit.bind(this);
 		this.state = {categories:[],description:null,title:null};
-		this.categoriesList = [
-			{ value: 'Plant', label: 'Plant' },
-			{ value: 'Angiosperms', label: 'Angiosperms' },
-			{ value: 'Monocots', label: 'Monocots' },
-			{ value: 'Commelinids', label: 'Commelinids' },
-			{ value: 'Poales', label: 'Poales' },
-			{ value: 'Poaceae', label: 'Poaceae' },
-			{ value: 'Panicoideae', label: 'Panicoideae' },
-			{ value: 'Andropogoneae', label: 'Andropogoneae' },
-			{ value: 'Andropogoninae', label: 'Andropogoninae' },
-			{ value: 'Cymbopogon', label: 'Cymbopogon' },
-			{ value: 'Cnidium', label: 'Cnidium' },
-			{ value: 'Selineae', label: 'Selineae' },
-			{ value: 'Apiaceae', label: 'Apiaceae' },
-			{ value: 'Apiales', label: 'Apiales' },
-			{ value: 'Eudicots', label: 'Eudicots' },
-			{ value: 'C. album"', label: 'C-album' },
-			{ value: 'Caryophyllales', label: 'Caryophyllales' },
-			{ value: 'L. nobilis"', label: 'L-nobilis"' },
-			{ value: 'F. ulmaria"', label: 'F-ulmaria"' },
-			{ value: 'T. pratense', label: 'T-pratense' },
-			{ value: 'Aloe', label: 'Aloe' }
-		];
 		this.categoriesChange = this.categoriesChange.bind(this);
 		this.descriptionChange = this.descriptionChange.bind(this);
 		this.titleChange = this.titleChange.bind(this);
+		this.loadCategories= this.loadCategories.bind(this);
+		this.allCategories = [];
 	}
+
+	//loading Categories data from server
+	loadCategories() {
+		follow(client, root, [
+			{rel: 'categoryItems'}]
+		).then(categoryItemCollection => {
+			return client({
+				method: 'GET',
+				path: categoryItemCollection.entity._links.profile.href,
+				headers: {'Accept': 'application/schema+json'}
+			}).then(schema => {
+				this.schema = schema.entity;
+				return categoryItemCollection;
+			});
+		}).done(categoryItemCollection => {
+			this.allCategories = categoryItemCollection.entity._embedded.categoryItems;
+		});
+	}
+
+	// tag::follow-1[]
+	componentDidMount() {
+		this.loadCategories();
+	}
+	// end::follow-1[]
 
 	handleSubmit(e) {
 		e.preventDefault();
@@ -230,6 +213,8 @@ class AddBlogItem extends React.Component {
 
 	render() {
 		var elements = [];
+		let categoriesList =[];
+		this.allCategories.forEach((category)=> categoriesList.push({value:category.name,label:category.name}));
 		_.each(this.props.attributes, (attribute)=> {
 			if (attribute==='title') {
 				elements.push(			
@@ -245,7 +230,7 @@ class AddBlogItem extends React.Component {
 					placeholder = attribute
 				}
 				elements.push(
-					<Select key={attribute} name={attribute} ref={attribute} options={this.categoriesList} multi={true} placeholder={placeholder} onChange={this.categoriesChange} />);			
+					<Select key={attribute} name={attribute} ref={attribute} options={categoriesList} multi={true} placeholder={placeholder} onChange={this.categoriesChange} />);			
 			}
 		});
 
@@ -367,16 +352,44 @@ class BlogItem extends React.Component {
 		this.handleDelete = this.handleDelete.bind(this);
 	}
 
+	// loading category items  from server
+	loadCategoriesFromServer() {
+		follow(client, root, [{rel: 'categories'}]
+		).then(categoryItemItemCollection => {
+			return client({
+				method: 'GET',
+				path: categoryItemCollection.entity._links.profile.href,
+				headers: {'Accept': 'application/schema+json'}
+			}).then(schema => {
+				this.schema = schema.entity;
+				return categoryItemCollection;
+			});
+		}).done(categoryItemCollection => {
+			this.setState({
+				blogItems: categoryItemCollection.entity._embedded.blogItems,
+				attributes: Object.keys(this.schema.properties),
+				links: categoryItemCollection.entity._links});
+		});
+	}
+	// end::follow-2[]
+
 	handleDelete() {
 		this.props.onDelete(this.props.blogItem);
 	}
 
 	render() {
 		var creationDate = this.props.blogItem.createdOn.toString();
-		var categories; 
-		_.each(this.props.blogItem.categories,(category)=> categories=`${category.name}, ${categories}`);
-		console.log("categories::");
-		console.log(this.props.blogItem.categories);
+		var categories=[];
+		this.loadCategoriesFromServer();
+
+
+		//var categories = this.props.blogItem.categories.map(category =>
+		//	<Category key={category._links.self.href} name={category}/>
+		//);
+
+		//console.log("categories::");
+		//console.log(this.props.blogItem.categories);
+
 		return (
 			<tr>
 				<td>
@@ -415,6 +428,14 @@ class BlogItem extends React.Component {
 // end::blogItem[]
 
 
+class Category extends React.Component {
+	constructor(props) {
+		super(props);
+	}
+	render(){
+		return(<span name={this.props.name}></span>);		
+	}
+}
 
 
 ReactDOM.render(
