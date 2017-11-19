@@ -14,7 +14,6 @@ moment().format("MMM Do YY");
 const root = '/api';
 import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 import Select from 'react-select';
-//import '../../../node_modules/react-select/dist/react-select.css';
 
 class App extends React.Component {
 	render(){
@@ -33,15 +32,14 @@ class LandingPage extends React.Component {
 
 	constructor(props) {
 		super(props);
-		this.state = {blogItems: [], attributes: [], pageSize: 2, links: {}};
+		this.state = {blogItems: [], attributes: [], pageSize: 2, links: {}, categoryItems:[]};
 		this.updatePageSize = this.updatePageSize.bind(this);
 		this.onCreate = this.onCreate.bind(this);
 		this.onDelete = this.onDelete.bind(this);
 		this.onNavigate = this.onNavigate.bind(this);
-		//this.categories = {blogItems: [],attributes: [],links: {}};
 	}
 
-	// tag::follow-2[]
+	// loading blog items data from server
 	loadFromServer(pageSize) {
 		follow(client, root, [
 			{rel: 'blogItems', params: {size: pageSize}}]
@@ -64,6 +62,7 @@ class LandingPage extends React.Component {
 	}
 	// end::follow-2[]
 
+	//loading Categories data from server
 	loadCategories() {
 		follow(client, root, [
 			{rel: 'categoryItems'}]
@@ -78,9 +77,7 @@ class LandingPage extends React.Component {
 			});
 		}).done(categoryItemCollection => {
 			this.setState({
-				categoryItems: categoryItemCollection.entity._embedded.categoryItems,
-				attributes: Object.keys(this.schema.properties),
-				links: categoryItemCollection.entity._links});
+				categoryItems: categoryItemCollection.entity._embedded.categoryItems});
 		});
 	}
 
@@ -131,7 +128,6 @@ class LandingPage extends React.Component {
 	updatePageSize(pageSize) {
 		if (pageSize !== this.state.pageSize) {
 			this.loadFromServer(pageSize);
-			this.loadCategories();
 		}
 	}
 	// end::update-page-size[]
@@ -139,6 +135,7 @@ class LandingPage extends React.Component {
 	// tag::follow-1[]
 	componentDidMount() {
 		this.loadFromServer(this.state.pageSize);
+		this.loadCategories();
 	}
 	// end::follow-1[]
 
@@ -163,11 +160,39 @@ class AddBlogItem extends React.Component {
 	constructor(props) {
 		super(props);
 		this.handleSubmit = this.handleSubmit.bind(this);
+		this.state = {categories:[],description:null,title:null};
+		this.categoriesList = [
+			{ value: 'Plant', label: 'Plant' },
+			{ value: 'Angiosperms', label: 'Angiosperms' },
+			{ value: 'Monocots', label: 'Monocots' },
+			{ value: 'Commelinids', label: 'Commelinids' },
+			{ value: 'Poales', label: 'Poales' },
+			{ value: 'Poaceae', label: 'Poaceae' },
+			{ value: 'Panicoideae', label: 'Panicoideae' },
+			{ value: 'Andropogoneae', label: 'Andropogoneae' },
+			{ value: 'Andropogoninae', label: 'Andropogoninae' },
+			{ value: 'Cymbopogon', label: 'Cymbopogon' },
+			{ value: 'Cnidium', label: 'Cnidium' },
+			{ value: 'Selineae', label: 'Selineae' },
+			{ value: 'Apiaceae', label: 'Apiaceae' },
+			{ value: 'Apiales', label: 'Apiales' },
+			{ value: 'Eudicots', label: 'Eudicots' },
+			{ value: 'C. album"', label: 'C-album' },
+			{ value: 'Caryophyllales', label: 'Caryophyllales' },
+			{ value: 'L. nobilis"', label: 'L-nobilis"' },
+			{ value: 'F. ulmaria"', label: 'F-ulmaria"' },
+			{ value: 'T. pratense', label: 'T-pratense' },
+			{ value: 'Aloe', label: 'Aloe' }
+		];
+		this.categoriesChange = this.categoriesChange.bind(this);
+		this.descriptionChange = this.descriptionChange.bind(this);
+		this.titleChange = this.titleChange.bind(this);
 	}
 
 	handleSubmit(e) {
 		e.preventDefault();
 		var newBlogItem = {};
+		console.log("new Blog item is submitted:" +JSON.stringify(this.state));
 		this.props.attributes.forEach(attribute => {
 			newBlogItem[attribute] = ReactDOM.findDOMNode(this.refs[attribute]).value.trim();
 		});
@@ -182,38 +207,48 @@ class AddBlogItem extends React.Component {
 		window.location = "#";
 	}
 
+	categoriesChange(val) {
+		let categories = [];
+		_.each(val,(el)=> categories.push(el.value));
+		categories = _.xor(this.state.categories, categories);
+		this.setState({ categories: categories }, ()=> {
+			console.log("Categories is changed:"+ this.state.categories)});
+	}
+
+	descriptionChange(event) {
+		console.log("onchange description::"+event.target.value);
+		this.setState({ description: event.target.value },()=> {
+			console.log("Description is changed:"+ this.state.description)});
+	}
+
+	titleChange(event) {
+		console.log("onchange title::"+event.target.value );
+		this.setState({ title: event.target.value },()=> {
+			console.log("Title is changed:"+ this.state.title);
+		});
+	}
 
 	render() {
 		var elements = [];
-		var options = [
-			{ value: 'one', label: 'One' },
-			{ value: 'two', label: 'Two' }
-		  ];
-		//logChange(val) {
-		//	console.log("Selected: " + JSON.stringify(val));
-		//};
-
 		_.each(this.props.attributes, (attribute)=> {
 			if (attribute==='title') {
 				elements.push(			
-					<p key={attribute}>
-						<input type="text" placeholder={attribute} ref={attribute} className="field" />
-					</p>);
+					<input type="text"  cols="48"  placeholder={attribute} ref={attribute} onChange={this.titleChange}  className="field" key={attribute} />);
 			}
 			if (attribute==='description') {
 				elements.push(			
-					<p key={attribute}>
-						<input type="textarea" rows="5"  cols="150" placeholder={attribute} ref={attribute} className="field" />
-					</p>);
+					<textarea rows="5"  cols="48" placeholder={attribute} ref={attribute} className="field" onChange={this.descriptionChange} key={attribute} />);
 			}
 			if (attribute==='categories') {
+				let placeholder = this.state.categories;
+				if(_.isEmpty( placeholder)) {
+					placeholder = attribute
+				}
 				elements.push(
-					<Select key={attribute} name={attribute} ref={attribute} options={options} multi={true} placeholder={attribute} />);			
+					<Select key={attribute} name={attribute} ref={attribute} options={this.categoriesList} multi={true} placeholder={placeholder} onChange={this.categoriesChange} />);			
 			}
 		});
 
-
-		//<Select name={attribute} ref={attribute} options={options} multi={true} placeholder="Select a category" />
 		return (
 			//<Link to="/addBlogItem">
 			<div>
@@ -224,7 +259,7 @@ class AddBlogItem extends React.Component {
 				<div id="createBlogItem" className="modalDialog">
 					<div>
 						<a href="#" title="Close" className="close">X</a>
-						<h2>Create new blog item</h2>
+						<h2>Add new blog item</h2>
 						<form>
 							{elements}
 							<button className="btn btn-default" onClick={this.handleSubmit}>Add</button>
@@ -340,6 +375,8 @@ class BlogItem extends React.Component {
 		var creationDate = this.props.blogItem.createdOn.toString();
 		var categories; 
 		_.each(this.props.blogItem.categories,(category)=> categories=`${category.name}, ${categories}`);
+		console.log("categories::");
+		console.log(this.props.blogItem.categories);
 		return (
 			<tr>
 				<td>
@@ -376,6 +413,9 @@ class BlogItem extends React.Component {
 	}
 }
 // end::blogItem[]
+
+
+
 
 ReactDOM.render(
 	<App />,
