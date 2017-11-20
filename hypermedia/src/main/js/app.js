@@ -383,7 +383,8 @@ class BlogItem extends React.Component {
 		//this methode suppose to fill the this.categories 
 		this.loadCategoriesOfBlogItem();
 		//get into a list 
-		let categories = this.categories._embedded.categoryItems.map("name"	);		
+		let categories = [];
+		//categories = this.categories._embedded.categoryItems.map("name"	);		
 
 		return (
 			<tr>
