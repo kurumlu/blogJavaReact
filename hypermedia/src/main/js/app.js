@@ -350,25 +350,26 @@ class BlogItem extends React.Component {
 	constructor(props) {
 		super(props);
 		this.handleDelete = this.handleDelete.bind(this);
+		this.loadCategoriesOfBlogItem = this.loadCategoriesOfBlogItem.bind(this);
+		this.categories = [];
 	}
 
-	// loading category items  from server
-	loadCategoriesFromServer() {
+	// loading category items  of an specific BlogItem from server
+	//***TODO:this function does not work
+	//***but the given path is correct : this.props.blogItem._links.categories.href
+	loadCategoriesOfBlogItem() {
 		follow(client, root, [{rel: 'categories'}]
 		).then(categoryItemItemCollection => {
 			return client({
 				method: 'GET',
-				path: categoryItemCollection.entity._links.profile.href,
+				path: this.props.blogItem._links.categories.href,
 				headers: {'Accept': 'application/schema+json'}
 			}).then(schema => {
 				this.schema = schema.entity;
 				return categoryItemCollection;
 			});
 		}).done(categoryItemCollection => {
-			this.setState({
-				blogItems: categoryItemCollection.entity._embedded.blogItems,
-				attributes: Object.keys(this.schema.properties),
-				links: categoryItemCollection.entity._links});
+			this.categories =  categoryItemCollection.entity._embedded.categoryItems;
 		});
 	}
 	// end::follow-2[]
@@ -379,16 +380,10 @@ class BlogItem extends React.Component {
 
 	render() {
 		var creationDate = this.props.blogItem.createdOn.toString();
-		var categories=[];
-		this.loadCategoriesFromServer();
-
-
-		//var categories = this.props.blogItem.categories.map(category =>
-		//	<Category key={category._links.self.href} name={category}/>
-		//);
-
-		//console.log("categories::");
-		//console.log(this.props.blogItem.categories);
+		//this methode suppose to fill the this.categories 
+		this.loadCategoriesOfBlogItem();
+		//get into a list 
+		let categories = this.categories._embedded.categoryItems.map("name"	);		
 
 		return (
 			<tr>
@@ -426,16 +421,6 @@ class BlogItem extends React.Component {
 	}
 }
 // end::blogItem[]
-
-
-class Category extends React.Component {
-	constructor(props) {
-		super(props);
-	}
-	render(){
-		return(<span name={this.props.name}></span>);		
-	}
-}
 
 
 ReactDOM.render(

@@ -118,7 +118,7 @@ public class DatabaseLoader implements CommandLineRunner {
 		this.repository.save(new BlogItem("Lemon-grass", "Cymbopogon, better known as lemongrass, is a genus of Asian, African, Australian, and tropical island plants in the grass family. Some species (particularly Cymbopogon citratus) are commonly cultivated as culinary and medicinal herbs because of their scent, resembling that of lemons (Citrus limon). Common names include lemon grass, lemongrass, barbed wire grass, silky heads, citronella grass, cha de Dartigalongue, fever grass, tanglad, hierba Luisa, or gavati chahapati, amongst many others.",categories));
 
 		//filling data for the Categories table
-		this.catItemRepository.save(new CategoryItem ("plant"));
+		this.catItemRepository.save(new CategoryItem ("Plant"));
 		this.catItemRepository.save(new CategoryItem ("Angiosperms"));
 		this.catItemRepository.save(new CategoryItem ("Monocots"));
 		this.catItemRepository.save(new CategoryItem ("Commelinids"));
